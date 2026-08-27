@@ -73,75 +73,47 @@ if result:
         os.mkdir("temp")
     except:
         pass
-    st.title("Texto a Audio")
-    translator = Translator()
-    
-    text = str(result.get("GET_TEXT"))
-    in_lang = st.selectbox(
-        "Selecciona el lenguaje de Entrada",
-        ("Inglés", "Español", "Bengali", "Coreano", "Mandarín", "Japonés"),
-    )
-    if in_lang == "Inglés":
-        input_language = "en"
-    elif in_lang == "Español":
-        input_language = "es"
-    elif in_lang == "Bengali":
-        input_language = "bn"
-    elif in_lang == "Coreano":
-        input_language = "ko"
-    elif in_lang == "Mandarín":
-        input_language = "zh-cn"
-    elif in_lang == "Japonés":
-        input_language = "ja"
-    
-    out_lang = st.selectbox(
-        "Selecciona el lenguaje de salida",
-        ("Inglés", "Español", "Bengali", "Coreano", "Mandarín", "Japonés"),
-    )
-    if out_lang == "Inglés":
-        output_language = "en"
-    elif out_lang == "Español":
-        output_language = "es"
-    elif out_lang == "Bengali":
-        output_language = "bn"
-    elif out_lang == "Coreano":
-        output_language = "ko"
-    elif out_lang == "Mandarín":
-        output_language = "zh-cn"
-    elif out_lang == "Japonés":
-        output_language = "ja"
-    
-    english_accent = st.selectbox(
-        "Selecciona el acento",
-        (
-            "Defecto",
-            "Español",
-            "Reino Unido",
-            "Estados Unidos",
-            "Canada",
-            "Australia",
-            "Irlanda",
-            "Sudáfrica",
-        ),
-    )
-    
-    if english_accent == "Defecto":
-        tld = "com"
-    elif english_accent == "Español":
-        tld = "com.mx"
-    
-    elif english_accent == "Reino Unido":
-        tld = "co.uk"
-    elif english_accent == "Estados Unidos":
-        tld = "com"
-    elif english_accent == "Canada":
-        tld = "ca"
-    elif english_accent == "Australia":
-        tld = "com.au"
-    elif english_accent == "Irlanda":
-        tld = "ie"
-    elif english_accent == "Sudáfrica":
-        tld = "co.za"
+   st.title("Texto a Audio")
+translator = Translator()
+
+text = str(result.get("GET_TEXT"))
+
+# Mapeo de idiomas disponibles (código ISO)
+LANGUAGES = {
+    "Inglés": "en",
+    "Español": "es",
+    "Francés": "fr",
+    "Alemán": "de",
+    "Bengali": "bn",
+    "Coreano": "ko",
+    "Mandarín": "zh-cn",
+    "Japonés": "ja",
+}
+
+# Mapeo de acentos/dominios (TLD para gTTS)
+ACCENTS = {
+    "Defecto": "com",
+    "Español": "com.mx",
+    "Francés": "fr",
+    "Alemán": "de",
+    "Reino Unido": "co.uk",
+    "Estados Unidos": "com",
+    "Canada": "ca",
+    "Australia": "com.au",
+    "Irlanda": "ie",
+    "Sudáfrica": "co.za",
+}
+
+# Selectores de idioma
+in_lang = st.selectbox("Selecciona el lenguaje de Entrada", list(LANGUAGES.keys()))
+input_language = LANGUAGES[in_lang]
+
+out_lang = st.selectbox("Selecciona el lenguaje de salida", list(LANGUAGES.keys()))
+output_language = LANGUAGES[out_lang]
+
+# Selector de acento / TLD
+english_accent = st.selectbox("Selecciona el acento", list(ACCENTS.keys()))
+tld = ACCENTS[english_accent]
     
     
     def text_to_speech(input_language, output_language, text, tld):
