@@ -1,44 +1,41 @@
-import os
-import streamlit as st
-from bokeh.models.widgets import Button
-#from bokeh.io import show
-#from bokeh.models import Button
-from bokeh.models import CustomJS
-from streamlit_bokeh_events import streamlit_bokeh_events
-from PIL import Image
-import time
 import glob
-
-
-
-from gtts import gTTS
+import os
+import time
+from bokeh.models import CustomJS
+from bokeh.models.widgets import Button
 from googletrans import Translator
-
+from gtts import gTTS
+from PIL import Image
+import streamlit as st
+from streamlit_bokeh_events import streamlit_bokeh_events
 
 st.title("TRADUCTOR.")
 st.subheader("Escucho lo que quieres traducir.")
 
+image = Image.open("ciao.jpg")
+st.image(image, width=300)
 
-image = Image.open('ciao.jpg')
-
-st.image(image,width=300)
 with st.sidebar:
     st.subheader("Traductor.")
-    st.write("Presiona el botón, cuando escuches la señal "
-                 "habla lo que quieres traducir, luego selecciona"   
-                 " la configuración de lenguaje que necesites.")
+    st.write(
+        "Presiona el botón, cuando escuches la señal "
+        "habla lo que quieres traducir, luego selecciona "
+        "la configuración de lenguaje que necesites."
+    )
 
+st.write("Toca el Botón y habla lo que quieres traducir")
 
-st.write("Toca el Botón y habla lo que quires traducir")
+stt_button = Button(label=" Escuchar 🎤", width=300, height=50)
 
-stt_button = Button(label=" Escuchar  🎤", width=300,  height=50)
-
-stt_button.js_on_event("button_click", CustomJS(code="""
+stt_button.js_on_event(
+    "button_click",
+    CustomJS(
+        code="""
     var recognition = new webkitSpeechRecognition();
-    recognition.continuous = false;  // Cambia a false
+    recognition.continuous = false;
     recognition.interimResults = true;
-    recognition.lang = 'es-ES';  // Puedes ajustar el idioma
- 
+    recognition.lang = 'es-ES';
+
     recognition.onresult = function (e) {
         var value = "";
         for (var i = e.resultIndex; i < e.results.length; ++i) {
@@ -46,7 +43,7 @@ stt_button.js_on_event("button_click", CustomJS(code="""
                 value += e.results[i][0].transcript;
             }
         }
-        if ( value != "") {
+        if (value != "") {
             document.dispatchEvent(new CustomEvent("GET_TEXT", {detail: value}));
         }
     }
@@ -56,7 +53,9 @@ stt_button.js_on_event("button_click", CustomJS(code="""
     }
     
     recognition.start();
-"""))
+"""
+    ),
+)
 
 result = streamlit_bokeh_events(
     stt_button,
@@ -64,7 +63,8 @@ result = streamlit_bokeh_events(
     key="listen",
     refresh_on_update=False,
     override_height=75,
-    debounce_time=0)
+    debounce_time=0,
+)
 
 if result:
     if "GET_TEXT" in result:
@@ -73,49 +73,45 @@ if result:
         os.mkdir("temp")
     except:
         pass
-   st.title("Texto a Audio")
-translator = Translator()
 
-text = str(result.get("GET_TEXT"))
+    st.title("Texto a Audio")
+    translator = Translator()
 
-# Mapeo de idiomas disponibles (código ISO)
-LANGUAGES = {
-    "Inglés": "en",
-    "Español": "es",
-    "Francés": "fr",
-    "Alemán": "de",
-    "Bengali": "bn",
-    "Coreano": "ko",
-    "Mandarín": "zh-cn",
-    "Japonés": "ja",
-}
+    text = str(result.get("GET_TEXT"))
 
-# Mapeo de acentos/dominios (TLD para gTTS)
-ACCENTS = {
-    "Defecto": "com",
-    "Español": "com.mx",
-    "Francés": "fr",
-    "Alemán": "de",
-    "Reino Unido": "co.uk",
-    "Estados Unidos": "com",
-    "Canada": "ca",
-    "Australia": "com.au",
-    "Irlanda": "ie",
-    "Sudáfrica": "co.za",
-}
+    LANGUAGES = {
+        "Inglés": "en",
+        "Español": "es",
+        "Francés": "fr",
+        "Alemán": "de",
+        "Bengali": "bn",
+        "Coreano": "ko",
+        "Mandarín": "zh-cn",
+        "Japonés": "ja",
+    }
 
-# Selectores de idioma
-in_lang = st.selectbox("Selecciona el lenguaje de Entrada", list(LANGUAGES.keys()))
-input_language = LANGUAGES[in_lang]
+    ACCENTS = {
+        "Defecto": "com",
+        "Español": "com.mx",
+        "Francés": "fr",
+        "Alemán": "de",
+        "Reino Unido": "co.uk",
+        "Estados Unidos": "com",
+        "Canada": "ca",
+        "Australia": "com.au",
+        "Irlanda": "ie",
+        "Sudáfrica": "co.za",
+    }
 
-out_lang = st.selectbox("Selecciona el lenguaje de salida", list(LANGUAGES.keys()))
-output_language = LANGUAGES[out_lang]
+    in_lang = st.selectbox("Selecciona el lenguaje de Entrada", list(LANGUAGES.keys()))
+    input_language = LANGUAGES[in_lang]
 
-# Selector de acento / TLD
-english_accent = st.selectbox("Selecciona el acento", list(ACCENTS.keys()))
-tld = ACCENTS[english_accent]
-    
-    
+    out_lang = st.selectbox("Selecciona el lenguaje de salida", list(LANGUAGES.keys()))
+    output_language = LANGUAGES[out_lang]
+
+    english_accent = st.selectbox("Selecciona el acento", list(ACCENTS.keys()))
+    tld = ACCENTS[english_accent]
+
     def text_to_speech(input_language, output_language, text, tld):
         translation = translator.translate(text, src=input_language, dest=output_language)
         trans_text = translation.text
@@ -126,22 +122,20 @@ tld = ACCENTS[english_accent]
             my_file_name = "audio"
         tts.save(f"temp/{my_file_name}.mp3")
         return my_file_name, trans_text
-    
-    
+
     display_output_text = st.checkbox("Mostrar el texto")
-    
+
     if st.button("convertir"):
-        result, output_text = text_to_speech(input_language, output_language, text, tld)
-        audio_file = open(f"temp/{result}.mp3", "rb")
-        audio_bytes = audio_file.read()
-        st.markdown(f"## Tú audio:")
+        res, output_text = text_to_speech(input_language, output_language, text, tld)
+        with open(f"temp/{res}.mp3", "rb") as audio_file:
+            audio_bytes = audio_file.read()
+        st.markdown("## Tú audio:")
         st.audio(audio_bytes, format="audio/mp3", start_time=0)
-    
+
         if display_output_text:
-            st.markdown(f"## Texto de salida:")
+            st.markdown("## Texto de salida:")
             st.write(f" {output_text}")
-    
-    
+
     def remove_files(n):
         mp3_files = glob.glob("temp/*mp3")
         if len(mp3_files) != 0:
